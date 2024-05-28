@@ -17,8 +17,8 @@ func main() {
 			fmt.Println("Router not reachable. Shutting down the system...")
 			shutdownSystem()
 		} else {
-                       fmt.Println("Router reachable")
-                }
+			fmt.Println("Router reachable")
+		}
 		time.Sleep(1 * time.Minute)
 	}
 }
