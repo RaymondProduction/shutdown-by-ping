@@ -24,7 +24,7 @@ func main() {
 }
 
 func onReady() {
-	systray.SetIcon(getIcon("icon.ico")) // replace with your icon file
+	systray.SetIcon(getIcon("icon.png")) // replace with your icon file
 	systray.SetTitle("Ping Router")
 	systray.SetTooltip("Ping Router Service")
 
@@ -111,7 +111,8 @@ func shutdownSystem() {
 func getIcon(filePath string) []byte {
 	icon, err := os.ReadFile(filePath)
 	if err != nil {
-		log.Fatalf("Error during downloading icon: %v", err)
+		//log.Fatalf("Error during downloading icon: %v", err)
+		fmt.Printf("Error during downloading icon: %v\n", err)
 	}
 	return icon
 }
