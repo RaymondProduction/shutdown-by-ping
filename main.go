@@ -8,24 +8,31 @@ import (
 	"time"
 
 	"github.com/getlantern/systray"
+	"github.com/gen2brain/beeep"
 )
 
 const (
-	routerIP = "127.0.0.1"
+	routerIP = "192.168.1.4" //"127.0.0.1"
 )
 
 var (
+	greenIcon  []byte
+	redIcon []byte
+	yellowIcon []byte
 	pingTicker *time.Ticker
 	stopChan   chan bool
 )
 
 func main() {
+	greenIcon = getIcon("greenIcon.png")
+	redIcon = getIcon("redIcon.png")
+	yellowIcon = getIcon("yellowIcon.png")
 	systray.Run(onReady, onExit)
 }
 
 func onReady() {
-	systray.SetIcon(getIcon("icon.png")) // replace with your icon file
-	systray.SetTitle("Ping Router")
+	systray.SetIcon(yellowIcon) // replace with your icon file
+	// systray.SetTitle("Ping Router")
 	systray.SetTooltip("Ping Router Service")
 
 	startItem := systray.AddMenuItem("Start Ping", "Start pinging the router")
@@ -41,11 +48,14 @@ func onReady() {
 				startPinging()
 				startItem.Disable()
 				stopItem.Enable()
+				fmt.Println("startItem")
 			case <-stopItem.ClickedCh:
 				stopPinging()
 				startItem.Enable()
 				stopItem.Disable()
+				fmt.Println("stopItem")
 			case <-quitItem.ClickedCh:
+				fmt.Println("quitItem")
 				systray.Quit()
 				return
 			}
@@ -59,18 +69,29 @@ func onExit() {
 }
 
 func startPinging() {
+	notifyUser("Start checking.")
+	systray.SetIcon(greenIcon)
 	stopChan = make(chan bool)
-	pingTicker = time.NewTicker(1 * time.Minute)
+	pingTicker = time.NewTicker(1 * time.Second)
 
 	go func() {
+		firstMinute := true
 		for {
 			select {
 			case <-pingTicker.C:
 				if !pingRouter(routerIP) {
-					fmt.Println("Router not reachable. Shutting down the system...")
-					shutdownSystem()
+					if firstMinute {
+						systray.SetIcon(redIcon)
+						notifyUser("The router is not reachable. Please check your network connection.")
+						firstMinute = false
+					} else {
+						fmt.Println("Router not reachable. Shutting down the system...")
+						//shutdownSystem()
+						notifyUser("The router is not reachable. Please check your network connection.")
+					}
 				} else {
 					fmt.Println("Router reachable")
+					systray.SetIcon(yellowIcon)
 				}
 			case <-stopChan:
 				pingTicker.Stop()
@@ -81,6 +102,7 @@ func startPinging() {
 }
 
 func stopPinging() {
+	systray.SetIcon(yellowIcon)
 	if stopChan != nil {
 		stopChan <- true
 	}
@@ -97,6 +119,13 @@ func pingRouter(ip string) bool {
 		return true
 	}
 	return false
+}
+
+func notifyUser(message string) {
+	err := beeep.Notify("System shutdown", message, "")
+	if err != nil {
+		fmt.Printf("Error sending notification: %v\n", err)
+	}
 }
 
 func shutdownSystem() {
