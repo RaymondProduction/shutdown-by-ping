@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/getlantern/systray"
 	"github.com/gen2brain/beeep"
+	"github.com/slytomcat/systray"
 )
 
 const (
@@ -17,7 +17,7 @@ const (
 
 var (
 	greenIcon  []byte
-	redIcon []byte
+	redIcon    []byte
 	yellowIcon []byte
 	pingTicker *time.Ticker
 	stopChan   chan bool
@@ -36,7 +36,9 @@ func onReady() {
 	systray.SetTooltip("Ping Router Service")
 
 	startItem := systray.AddMenuItem("Start Ping", "Start pinging the router")
+	startItem.SetIcon(greenIcon)
 	stopItem := systray.AddMenuItem("Stop Ping", "Stop pinging the router")
+	stopItem.SetIcon(redIcon)
 	quitItem := systray.AddMenuItem("Quit", "Quit the application")
 
 	stopItem.Disable()
