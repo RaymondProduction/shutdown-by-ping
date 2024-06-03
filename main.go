@@ -16,9 +16,13 @@ const (
 )
 
 var (
+	// icons
 	greenIcon  []byte
 	redIcon    []byte
 	yellowIcon []byte
+
+	timeSec uint
+
 	pingTicker *time.Ticker
 	stopChan   chan bool
 )
@@ -77,15 +81,15 @@ func startPinging() {
 	pingTicker = time.NewTicker(1 * time.Second)
 
 	go func() {
-		firstMinute := true
 		for {
 			select {
 			case <-pingTicker.C:
+				timeSec++
+				fmt.Printf("Time: %d\n", timeSec)
 				if !pingRouter(routerIP) {
-					if firstMinute {
+					if timeSec == 10 {
 						systray.SetIcon(redIcon)
 						notifyUser("The router is not reachable. Please check your network connection.")
-						firstMinute = false
 					} else {
 						fmt.Println("Router not reachable. Shutting down the system...")
 						//shutdownSystem()
@@ -96,6 +100,7 @@ func startPinging() {
 					systray.SetIcon(yellowIcon)
 				}
 			case <-stopChan:
+				fmt.Println("STOP!!!")
 				pingTicker.Stop()
 				return
 			}
