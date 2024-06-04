@@ -21,6 +21,7 @@ var (
 	redIcon    []byte
 	yellowIcon []byte
 
+	errorPingCounter uint
 	timeSec uint
 
 	pingTicker *time.Ticker
@@ -52,13 +53,9 @@ func onReady() {
 			select {
 			case <-startItem.ClickedCh:
 				startPinging()
-				startItem.Disable()
-				stopItem.Enable()
 				fmt.Println("startItem")
 			case <-stopItem.ClickedCh:
 				stopPinging()
-				startItem.Enable()
-				stopItem.Disable()
 				fmt.Println("stopItem")
 			case <-quitItem.ClickedCh:
 				fmt.Println("quitItem")
@@ -75,6 +72,8 @@ func onExit() {
 }
 
 func startPinging() {
+	startItem.Disable()
+	stopItem.Enable()
 	notifyUser("Start checking.")
 	systray.SetIcon(greenIcon)
 	stopChan = make(chan bool)
@@ -87,13 +86,18 @@ func startPinging() {
 				timeSec++
 				fmt.Printf("Time: %d\n", timeSec)
 				if !pingRouter(routerIP) {
-					if timeSec == 10 {
-						systray.SetIcon(redIcon)
-						notifyUser("The router is not reachable. Please check your network connection.")
+					if errorPingCounter < 5 {
+						errorPingCounter++
+						fmt.Println("The router is unavailable. Pinging will be suspended after", 5 - errorPingCounter, " ping(s)\n")
+					} else if errorPingCounter == 5 {
+						notifyUser("Pinging was stopped.")
+						fmt.Println("Pinging was stopped.")
+						stopPinging()
+						//fmt.Println("Router not reachable. Shutting down the system...")
 					} else {
-						fmt.Println("Router not reachable. Shutting down the system...")
+						//fmt.Println("Router not reachable. Shutting down the system...")
 						//shutdownSystem()
-						notifyUser("The router is not reachable. Please check your network connection.")
+						notifyUser("The router is not reachable. Shutting down the system...")
 					}
 				} else {
 					fmt.Println("Router reachable")
@@ -109,7 +113,10 @@ func startPinging() {
 }
 
 func stopPinging() {
+	errorPingCounter = 0
 	systray.SetIcon(yellowIcon)
+	startItem.Enable()
+	stopItem.Disable()
 	if stopChan != nil {
 		stopChan <- true
 	}
