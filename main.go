@@ -12,6 +12,9 @@ const (
 )
 
 func main() {
+	fmt.Println("Waiting for 3 minutes before starting the algorithm...")
+	time.Sleep(3 * time.Minute)
+
 	for {
 		if !pingRouter(routerIP) {
 			fmt.Println("Router not reachable. Shutting down the system...")
