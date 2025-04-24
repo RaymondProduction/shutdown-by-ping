@@ -1,0 +1,11 @@
+[Unit]
+Description=Ping Router and Shutdown Service
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/ping_shutdown
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target

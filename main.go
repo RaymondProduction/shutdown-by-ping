@@ -12,15 +12,15 @@ const (
 )
 
 func main() {
-	fmt.Println("Waiting for 3 minutes before starting the algorithm...")
+	fmt.Println("Ver. 0.1.x Waiting for 3 minutes before starting the algorithm...")
 	time.Sleep(3 * time.Minute)
 
 	for {
 		if !pingRouter(routerIP) {
-			fmt.Println("Router not reachable. Shutting down the system...")
+			fmt.Printf("Router %s not reachable. Shutting down the system...\n", routerIP)
 			shutdownSystem()
 		} else {
-			fmt.Println("Router reachable")
+			fmt.Printf("Router %s reachable\n", routerIP)
 		}
 		time.Sleep(1 * time.Minute)
 	}
@@ -30,7 +30,7 @@ func pingRouter(ip string) bool {
 	cmd := exec.Command("ping", "-c", "1", ip)
 	output, err := cmd.Output()
 	if err != nil {
-		fmt.Printf("Error executing ping: %v\n", err)
+		fmt.Printf("Error executing ping: %v (IP: %s)\n", err, ip)
 		return false
 	}
 	if strings.Contains(string(output), "1 received") {
